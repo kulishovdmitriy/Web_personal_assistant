@@ -1,9 +1,20 @@
 from sqlalchemy.orm import Mapped, mapped_column, declarative_base, relationship
 from sqlalchemy import String, ForeignKey, Boolean, func
 from datetime import date
-from sqlalchemy.sql.sqltypes import DateTime, Integer
+from sqlalchemy.sql.sqltypes import DateTime, Date
 
 Base = declarative_base()
+
+
+class Contact(Base):
+    __tablename__ = "contacts"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    address: Mapped[str] = mapped_column(String(250))
+    number_phone: Mapped[str] = mapped_column(String(50), nullable=False)
+    email: Mapped[str] = mapped_column(String(50), nullable=False)
+    birthday: Mapped[date] = mapped_column("birthday", Date, nullable=False)
 
 
 class User(Base):

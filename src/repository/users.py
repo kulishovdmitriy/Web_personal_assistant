@@ -44,3 +44,16 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_database)):
     return {
         "message": "User deleted"
     }
+
+
+async def get_user_by_email(email: str, db: AsyncSession = Depends(get_database)):
+    result = select(User).filter_by(email=email)
+    user = await db.execute(result)
+    user = user.scalar_one_or_none()
+    return user
+
+
+async def update_token(user: User, token: str, db: AsyncSession):
+    user.refresh_token = token
+    await db.commit()
+

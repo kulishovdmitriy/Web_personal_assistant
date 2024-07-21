@@ -1,5 +1,6 @@
+import enum
 from sqlalchemy.orm import Mapped, mapped_column, declarative_base, relationship
-from sqlalchemy import String, ForeignKey, Boolean, func, Integer
+from sqlalchemy import String, ForeignKey, Boolean, func, Integer, Enum
 from datetime import date
 from sqlalchemy.sql.sqltypes import DateTime, Date
 
@@ -22,6 +23,12 @@ class Contact(Base):
     user: Mapped["User"] = relationship("User", backref="contacts", lazy="joined")
 
 
+class Role(enum.Enum):
+    admin: str = "admin"
+    moderator: str = "moderator"
+    user: str = "user"
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -35,3 +42,4 @@ class User(Base):
     update_at: Mapped[date] = mapped_column("update_at", DateTime, default=func.now(), onupdate=func.now())
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     blocked: Mapped[bool] = mapped_column(default=False)
+    role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user, nullable=True)

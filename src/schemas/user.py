@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import date
 
+from src.database.models import Role
+
 
 class UserSchema(BaseModel):
     first_name: str = Field(..., min_length=3, max_length=50)
@@ -23,6 +25,7 @@ class ResponseUserSchema(BaseModel):
     last_name: str
     email: EmailStr
     birthday: date
+    role: Role
 
     class Config:
         from_attributes = True

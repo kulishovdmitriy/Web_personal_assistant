@@ -1,126 +1,56 @@
-# import aioredis
-import pickle
-import os
-from datetime import datetime, timedelta
+import uuid
 from typing import Optional
-from fastapi import Depends, HTTPException, status
-from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-from jose import JWTError, jwt
+from fastapi import Depends, Request
+from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
+from fastapi_users.db import SQLAlchemyUserDatabase
 
-from src.database.database import get_database
+from src.database.user_db import get_user_db, User
 from src.conf.config import settings
-from src.repository.users import get_user_by_email
 
 
-class Auth:
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-    SECRET_KEY = settings.secret_key
-    ALGORITHM = settings.algorithm
-
-    # def __init__(self):
-    #     self.cache = aioredis.from_url(f"redis://{settings.redis_host}:{settings.redis_port}/0")
-
-    def verify_password(self, plain_password, hashed_password):
-        return self.pwd_context.verify(plain_password, hashed_password)
-
-    def get_password_hash(self, password: str):
-        return self.pwd_context.hash(password)
-
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
-
-    async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + timedelta(seconds=expires_delta)
-        else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
-        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"})
-        encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-        return encoded_access_token
-
-    async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + timedelta(seconds=expires_delta)
-        else:
-            expire = datetime.utcnow() + timedelta(days=30)
-        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
-        encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-        return encoded_refresh_token
-
-    async def decode_refresh_token(self, refresh_token: str):
-        try:
-            payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload["scope"] == "refresh_token":
-                email = payload["sub"]
-                return email
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid scope for token",
-            )
-        except JWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-            )
-
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_database)):
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        email = None
-        try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload["scope"] == "access_token":
-                email = payload["sub"]
-                if email is None:
-                    raise credentials_exception
-            else:
-                raise credentials_exception
-        except JWTError:
-            raise credentials_exception
-
-        user = await get_user_by_email(email, db)
-        if user is None:
-            raise credentials_exception
-        return user
-
-        # user_cache = str(email)
-        # print(user_cache)
-        # user = await self.cache.get(user_cache)
-        # if user is None:
-        #     user = await repository_users.get_user_by_email(email, db)
-        #     if user is None:
-        #         raise credentials_exception
-        #     await self.cache.set(user_cache, pickle.dumps(user))
-        #     await self.cache.expire(user_cache, 300)
-        # else:
-        #     user = pickle.loads(user)
-        # return user
-
-    # def create_email_token(self, data: dict):
-    #     to_encode = data.copy()
-    #     expire = datetime.utcnow() + timedelta(days=1)
-    #     to_encode.update({"iat": datetime.utcnow(), "exp": expire})
-    #     token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-    #     return token
-    #
-    # async def get_email_from_token(self, token: str):
-    #     try:
-    #         payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-    #         email = payload["sub"]
-    #         return email
-    #     except JWTError as e:
-    #         print(e)
-    #         raise HTTPException(
-    #             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-    #             detail="Invalid token for email verification",
-    #         )
+SECRET_KEY = settings.secret_key
 
 
-auth_service = Auth()
+class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+    reset_password_token_secret = SECRET_KEY
+    verification_token_secret = SECRET_KEY
+
+    async def on_after_register(self, user: User, request: Optional[Request] = None):
+        print(f"User {user.id} has registered.")
+
+    async def on_after_forgot_password(
+        self, user: User, token: str, request: Optional[Request] = None
+    ):
+        print(f"User {user.id} has forgot their password. Reset token: {token}")
+
+    async def on_after_request_verify(
+        self, user: User, token: str, request: Optional[Request] = None
+    ):
+        print(f"Verification requested for user {user.id}. Verification token: {token}")
+
+
+async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+    yield UserManager(user_db)
+
+
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+
+
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
+
+
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+
+current_active_user = fastapi_users.current_user(active=True)

@@ -1,40 +1,20 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+import uuid
 from datetime import date
-
-from src.database.models import Role
-
-
-class UserSchema(BaseModel):
-    first_name: str = Field(..., min_length=3, max_length=50)
-    last_name: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=16)
-    birthday: date
+from pydantic import Field
+from fastapi_users import schemas
 
 
-class UpdateUser(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-
-
-class ResponseUserSchema(BaseModel):
-    id: int
+class UserRead(schemas.BaseUser[uuid.UUID]):
     first_name: str
     last_name: str
-    email: EmailStr
     birthday: date
-    role: Role
-
-    class Config:
-        from_attributes = True
 
 
-class TokenSchema(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
+class UserCreate(schemas.BaseUserCreate):
+    first_name: str = Field(..., min_length=3, max_length=50)
+    last_name: str = Field(..., min_length=3, max_length=50)
+    birthday: date
 
 
-
+class UserUpdate(schemas.BaseUserUpdate):
+    pass

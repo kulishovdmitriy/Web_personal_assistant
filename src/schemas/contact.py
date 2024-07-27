@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, EmailStr
 from datetime import date, datetime
 from typing import Optional
 
-from src.schemas.user import ResponseUserSchema
+from src.schemas.user import UserRead
 
 
 class CreateContactSchema(BaseModel):
@@ -31,7 +31,7 @@ class ResponseContactSchema(BaseModel):
     email: EmailStr
     birthday: date | None
     create_at: datetime | None
-    user: ResponseUserSchema | None
+    user: UserRead | None
 
     class Config:
         from_attributes = True

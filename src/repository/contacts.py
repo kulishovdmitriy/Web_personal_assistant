@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.database.models import Contact, User
-from src.database.user_db import get_database
+from src.database.database import get_database
 from src.schemas.contact import CreateContactSchema, UpdateContactSchema
 
 

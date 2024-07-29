@@ -8,6 +8,11 @@ celery_app = Celery(
 )
 
 
-@celery_app.task
-def add(a, b):
-    return a + b
+celery_app.conf.update(
+    result_expires=3600,
+    task_serializer='json',
+    result_serializer='json',
+    accept_content=['json'],
+    timezone='UTC',
+    enable_utc=True,
+)

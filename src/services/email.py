@@ -14,11 +14,11 @@ conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
     MAIL_FROM=settings.MAIL_FROM,
-    MAIL_PORT=465,
+    MAIL_PORT=settings.MAIL_PORT,
     MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_FROM_NAME="Web_assistant System",
-    MAIL_STARTTLS=False,
-    MAIL_SSL_TLS=True,
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True,
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates',
@@ -54,6 +54,7 @@ token_handler = EmailTokenHandler()
 
 
 async def send_email(email: EmailStr, username: str, host: str):
+
     try:
         token_verification = token_handler.create_email_token({"sub": email})
         message = MessageSchema(
@@ -65,5 +66,11 @@ async def send_email(email: EmailStr, username: str, host: str):
 
         fm = FastMail(conf)
         await fm.send_message(message, template_name="verify_email.html")
+        # Логирование успешной отправки
+        print(f"Email sent successfully to {email}")
+        return {"message": f"Email sent successfully to {email}"}
+
     except ConnectionErrors as err:
-        print(err)
+        # Логирование ошибок
+        print(f"Failed to send email to {email}: {err}")
+        return {"message": f"Failed to send email to {email}", "error": str(err)}

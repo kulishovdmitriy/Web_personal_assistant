@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from src.schemas.user import UserCreate, UserRead, UserUpdate
 from src.services.auth import auth_backend, fastapi_users
 
+from src.routers import email
 
 router = APIRouter()
 
@@ -26,6 +27,12 @@ router.include_router(
 )
 router.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
+)
+
+router.include_router(
+    email.router,
     prefix="/users",
     tags=["users"],
 )

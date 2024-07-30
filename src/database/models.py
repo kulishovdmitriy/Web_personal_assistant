@@ -31,8 +31,7 @@ class Role(enum.Enum):
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
-    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    username: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
     birthday: Mapped[date] = mapped_column("birthday", Date, nullable=False)
     refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
     create_at: Mapped[date] = mapped_column("create_at", DateTime, default=func.now())

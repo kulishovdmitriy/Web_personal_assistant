@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     secret_key: str = "secret_key"
     algorithm: str = "algorithm"
 
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
+    MAIL_PORT: int
+    MAIL_SERVER: str
+
     model_config = SettingsConfigDict(extra='ignore', env_file='.env', env_file_encoding='utf-8')
 
 

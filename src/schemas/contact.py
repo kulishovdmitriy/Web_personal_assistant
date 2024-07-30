@@ -8,7 +8,7 @@ from src.schemas.user import UserRead
 class CreateContactSchema(BaseModel):
     first_name: str = Field(..., min_length=3, max_length=50)
     last_name: str = Field(..., min_length=3, max_length=50)
-    address: str = Field(..., min_length=10, max_length=250)
+    address: str = Field(..., min_length=5, max_length=250)
     number_phone: str = Field(..., min_length=10, max_length=15)
     email: EmailStr
     birthday: date
@@ -24,6 +24,7 @@ class UpdateContactSchema(BaseModel):
 
 
 class ResponseContactSchema(BaseModel):
+    id: int
     first_name: str
     last_name: str
     address: str

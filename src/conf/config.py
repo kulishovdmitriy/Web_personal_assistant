@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 587
     MAIL_SERVER: str = "smtp.example.com"
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
     model_config = SettingsConfigDict(extra='ignore', env_file='.env', env_file_encoding='utf-8')
 
 

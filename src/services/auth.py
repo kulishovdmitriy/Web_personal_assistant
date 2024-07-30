@@ -13,7 +13,7 @@ from src.database.user_db import get_user_db, User
 from src.conf.config import settings
 
 
-SECRET_KEY = settings.secret_key
+SECRET_KEY = settings.SECRET_KEY_JWT
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

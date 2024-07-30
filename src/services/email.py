@@ -24,8 +24,8 @@ conf = ConnectionConfig(
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates',
 )
 
-SECRET_KEY = settings.secret_key
-ALGORITHM = settings.algorithm
+SECRET_KEY = settings.SECRET_KEY_JWT
+ALGORITHM = settings.ALGORITHM
 
 
 class EmailTokenHandler:

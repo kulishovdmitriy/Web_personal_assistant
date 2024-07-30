@@ -5,8 +5,8 @@ from pydantic import EmailStr
 class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
 
-    secret_key: str = "secret_key"
-    algorithm: str = "algorithm"
+    SECRET_KEY_JWT: str = "secret_key"
+    ALGORITHM: str = "algorithm"
 
     MAIL_USERNAME: EmailStr = "example@example.com"
     MAIL_PASSWORD: str = "your_email_password"

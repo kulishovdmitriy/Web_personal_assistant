@@ -1,11 +1,15 @@
+import re
 import uvicorn
 import aioredis
+
+from ipaddress import ip_address
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-
+from typing import Callable
 from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 
@@ -14,6 +18,11 @@ from src.routers import contacts, auth, static
 from src.conf.config import settings
 
 origins = ["*"]  # Мы определяем список доменов, которые могут отправлять запросы в наш API
+
+banned_ips = [ip_address("192.168.0.1"), ip_address("192.168.1.1")]
+
+
+user_agent_ban_list = [r"Googlebot", r"Python-urllib"]
 
 
 @asynccontextmanager
@@ -40,6 +49,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def ban_ips(request: Request, call_next: Callable):
+    ip = ip_address(request.client.host)
+    if ip in banned_ips:
+        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+    response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def user_agent_ban_middleware(request: Request, call_next: Callable):
+    user_agent = request.headers.get("user-agent")
+    for ban_pattern in user_agent_ban_list:
+        if re.search(ban_pattern, user_agent):
+            return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+    response = await call_next(request)
+    return response
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 

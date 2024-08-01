@@ -37,4 +37,5 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     create_at: Mapped[date] = mapped_column("create_at", DateTime, default=func.now())
     update_at: Mapped[date] = mapped_column("update_at", DateTime, default=func.now(), onupdate=func.now())
     blocked: Mapped[bool] = mapped_column(default=False)
+    avatar: Mapped[str] = mapped_column(String(255), nullable=True)
     role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user, nullable=True)

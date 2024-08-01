@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 
 from src.database.user_db import get_database
-from src.routers import contacts, auth, static
+from src.routers import contacts, auth, tracing_system_email
 from src.conf.config import settings
 
 origins = ["*"]  # Мы определяем список доменов, которые могут отправлять запросы в наш API

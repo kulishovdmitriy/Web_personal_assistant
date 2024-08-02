@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 
 from src.database.user_db import get_database
-from src.routers import contacts, auth, tracing_system_email
+from src.routers import contacts, auth, tracing_system_email, avatar_user
 from src.conf.config import settings
 
 origins = ["*"]  # Мы определяем список доменов, которые могут отправлять запросы в наш API
@@ -73,7 +73,8 @@ app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 app.include_router(auth.router)
 app.include_router(contacts.router, prefix="/api")
-app.include_router(static.router, prefix="/users")
+app.include_router(tracing_system_email.router, prefix="/users")
+app.include_router(avatar_user.router, prefix="/api/users")
 
 
 @app.get("/")

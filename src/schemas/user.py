@@ -8,6 +8,8 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
     username: str
     avatar: str
     birthday: date
+    role: str
+    is_verified: bool
 
 
 class UserCreate(schemas.BaseUserCreate):

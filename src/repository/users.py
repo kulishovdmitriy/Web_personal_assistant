@@ -22,3 +22,11 @@ async def confirmed_email_task(email: str, db: AsyncSession) -> None:
     user = await get_user_by_email(email, db)
     user.is_verified = True
     await db.commit()
+
+
+async def update_avatar_url(email: str, url: str | None, db: AsyncSession):
+    user = await get_user_by_email(email, db)
+    user.avatar = url
+    await db.commit()
+    await db.refresh(user)
+    return user

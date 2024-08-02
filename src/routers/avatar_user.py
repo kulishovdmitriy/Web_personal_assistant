@@ -19,11 +19,11 @@ cloudinary.config(cloud_name=settings.CLOUDINARY_NAME, api_key=settings.CLOUDINA
 @router.patch("/avatar", response_model=UserRead)
 async def avatar_patch(file: UploadFile = File(), user: User = Depends(current_active_user),
                        db: AsyncSession = Depends(get_database)):
-    print(user)
+
     public_id = f"Web_personal_assistant/{user.email}"
     resource = cloudinary.uploader.upload(file.file, public_id=public_id, owerite=True)
     resource_url = cloudinary.CloudinaryImage(public_id).build_url(width=250, heigth=250, crop="fill",
                                                                    version=resource.get("version"))
-    print(resource_url)
+
     user = await update_avatar_url(user.email, resource_url, db)
     return user

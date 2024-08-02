@@ -2,6 +2,7 @@ import re
 import uvicorn
 import aioredis
 
+from pathlib import Path
 from ipaddress import ip_address
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, Request
@@ -69,7 +70,8 @@ async def user_agent_ban_middleware(request: Request, call_next: Callable):
     response = await call_next(request)
     return response
 
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+BASE_DIR = Path(".")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
 app.include_router(auth.router)
 app.include_router(contacts.router, prefix="/api")
